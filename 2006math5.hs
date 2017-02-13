@@ -43,6 +43,13 @@ formatSolutions xs = concatMap toString $ nub.sort $ map sortSolution xs
 solutions1 = formatSolutions $ filter isSolution allNumberSet
   where allNumberSet = map (take 7) $ permutations [1..9]
 
+-- 解のすべてのマスを、10から引いた値に置き換えたものも、また解である
+swapSolutions = (original == swapped, [original, swapped])
+  where original = unique $ filter isSolution allNumberSet
+        swapped  = unique $ map (map (\x -> 10 - x)) original
+        allNumberSet = map (take 7) $ permutations [1..9]
+        unique xs = nub.sort $ map sortSolution xs
+
 
 -- 解法2 : 縦横斜めの和が等しいものを探す
 sizeOfCells = 7
