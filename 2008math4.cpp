@@ -9,8 +9,10 @@
 // 構文解析結果をASTとしてではなく、直接値として返す方法は、以下を参考にしました。
 // http://www.kmonos.net/alang/boost/classes/spirit.html
 
+#include <algorithm>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/optional.hpp>

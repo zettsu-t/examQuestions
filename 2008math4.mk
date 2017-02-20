@@ -8,5 +8,5 @@ q1=$(foreach v,$1,$(shell echo $(v)|bc) = $(v)::)
 q2=$(filter %=1=::,$(foreach v,$1,$(v)=$(shell echo $(v)|bc)=::))
 .PHONY: all force
 all: force
-	@echo $(call q1,$(LIST1TO4)) | sed -e 's/::/\n/g' | sed -e "s/^[ ]*//" | sort -n
-	@echo $(call q2,$(Q2EXPRS)) | sed -e 's/::/\n/g' | sed -e "s/^[ ]*//" | sed -e 's/=1=//g'
+	@echo $(call q1,$(LIST1TO4)) | sed -e 's/::/\n/g' | sed -e 's/^[ ]*//' | sort -n
+	@echo $(call q2,$(Q2EXPRS)) | sed -e 's/::/\n/g' | sed -e 's/^[ ]*//' | sed -e 's/=1=//g'
