@@ -32,7 +32,7 @@ class NumberSet {
     using ResultSet = std::vector<Result>;
 
 public:
-    NumberSet(BigNumber minNumber, BigNumber maxNumber) {
+    NumberSet(const BigNumber& minNumber, const BigNumber& maxNumber) {
         addExpressions(minNumber, maxNumber);
         std::sort(results_.begin(), results_.end(),
                   [&](const auto& l, const auto& r) { return (*(l.value) < *(r.value)); });
@@ -59,14 +59,14 @@ public:
     }
 
 private:
-    void addExpressions(BigNumber number, BigNumber maxNumber) {
+    void addExpressions(const BigNumber& number, const BigNumber& maxNumber) {
         ExpressionSet exprSet;
         exprSet.push_back(boost::lexical_cast<std::string>(number));
         addExpressions(exprSet, number + 1, maxNumber);
         return;
     }
 
-    void addExpressions(const ExpressionSet& exprSet, BigNumber number, BigNumber maxNumber) {
+    void addExpressions(const ExpressionSet& exprSet, const BigNumber& number, const BigNumber& maxNumber) {
         if (number > maxNumber) {
             for(auto& expr : exprSet) {
                 results_.push_back(Result{expr, calculate(expr)});
