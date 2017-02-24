@@ -3,8 +3,6 @@
 import Data.List
 
 -- 演算子
-add x y = x + y
-mul x y = x * y
 opToChar 0 = "+"
 opToChar 1 = "*"
 
