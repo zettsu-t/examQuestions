@@ -1,5 +1,3 @@
-; https://github.com/clojure/math.combinatorics/
-
 (use 'clojure.math.combinatorics)
 
 (defn calc [num nums ops]

@@ -1,5 +1,5 @@
 .intel_syntax noprefix
-.file   "2008math4.s"
+.file   "2008math4asm.s"
 
 .text
     .global getExpressionInAsm
