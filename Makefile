@@ -41,7 +41,6 @@ LDFLAGS=
 AS=as
 CC=gcc
 CXX=g++
-LD=g++
 ASFLAGS=
 CFLAGS=-std=gnu99 -g -O -Wall
 CPPFLAGS=-std=c++14 -g -O -Wall
@@ -72,11 +71,11 @@ $(TARGET_2006): $(SOURCE_2006)
 	time ./$@ $(OPT_2006_3) > /dev/null
 
 $(TARGET_2008_CPP): $(OBJ_2008_CPP)
-	$(LD) $(LIBPATH) -o $@ $^ $(LDFLAGS) $(LIBS)
+	$(CXX) $(LIBPATH) -o $@ $^ $(LDFLAGS) $(LIBS)
 	./$@
 
 $(TARGET_2008_ASM): $(OBJ_2008_ASM_C) $(OBJ_2008_ASM_S)
-	$(LD) $(LIBPATH) -o $@ $^ $(LDFLAGS) $(LIBS)
+	$(CC) $(LIBPATH) -o $@ $^ $(LDFLAGS) $(LIBS)
 	./$@
 
 $(OBJ_2008_CPP): $(SOURCE_2008_CPP)
