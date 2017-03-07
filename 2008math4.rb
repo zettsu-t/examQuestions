@@ -8,13 +8,11 @@ class ExprSet
   attr_reader :exprSet
 
   def initialize(minNum, maxNum)
-    @exprSet = ((minNum+1)..maxNum).inject([minNum]) { |xs, i| xs.product(["+", "*"]).product([i]) }.map(&:join)
+    @exprSet = ((minNum+1)..maxNum).inject([minNum]) { |xs, i| xs.product(["+", "*"], [i]) }.map(&:join)
   end
 
   def printSums
-    strSet = @exprSet.map{ |expr| "#{eval(expr)} = #{expr}"}
-    width = strSet.map(&:length).max
-    puts strSet.map { |str| str.rjust(width, " ") }.sort
+    puts @exprSet.map{ |expr| "#{eval(expr)} = #{expr}"}.sort_by(&:to_i)
   end
 
   def printMatchedSums(other)
