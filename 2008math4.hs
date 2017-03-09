@@ -24,3 +24,7 @@ allLists minNum maxNum = map f opLists
 q1 = sort $ allLists 1 4
 -- 問4-2
 q2 = [(snd p, snd q) | p <- (allLists 1 5), q <- (allLists 2 6), fst p == fst q]
+
+main = do
+  putStrLn $ show q1
+  putStrLn $ show q2

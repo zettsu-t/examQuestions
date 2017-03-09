@@ -49,7 +49,7 @@ class NumberSet {
         for(Result resultA : resultSet_) {
             for(Result resultB : other.resultSet_) {
                 if ((resultA.value_ - resultB.value_) == 0) {
-                    System.out.println(resultA.expr_ + "=" + resultB.expr_);
+                    System.out.println(resultA.expr_ + "==" + resultB.expr_);
                 }
             }
         }
