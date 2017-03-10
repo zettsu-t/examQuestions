@@ -11,7 +11,10 @@
 
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <type_traits>
+#include <unordered_map>
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
@@ -22,20 +25,40 @@
 
 using BigNumber = boost::multiprecision::uint512_t;  // 計算結果
 
+// unordered_mapに格納できるようにする
+namespace std {
+  template <> struct hash<BigNumber> {
+    std::size_t operator()(const BigNumber& key) const {
+        using KeyType = size_t;
+        static_assert(std::is_unsigned<KeyType>::value, "Expect unsigned key");
+        return static_cast<KeyType>(key);
+    }
+  };
+}
+
 class NumberSet {
     using Expression = std::string;
-    struct Result {
+    struct Result final {
+        Result(const Expression& argExpr, const boost::optional<BigNumber>& argValue) :
+            expr(argExpr), value(argValue) {}
         Expression expr;
         boost::optional<BigNumber> value;
     };
     using ExpressionSet = std::vector<Expression>;
-    using ResultSet = std::vector<Result>;
+    using ResultSet = std::vector<std::shared_ptr<Result>>;
+    using ResultMap = std::unordered_map<BigNumber, std::vector<std::shared_ptr<Result>>>;
 
 public:
-    NumberSet(const BigNumber& minNumber, const BigNumber& maxNumber) {
+    enum class FILTER {
+        BY_EXPRESSION,
+        BY_VALUE,
+    };
+
+    NumberSet(const BigNumber& minNumber, const BigNumber& maxNumber, FILTER filter) :
+        filter_(filter) {
         addExpressions(minNumber, maxNumber);
         std::sort(results_.begin(), results_.end(),
-                  [&](const auto& l, const auto& r) { return (*(l.value) < *(r.value)); });
+                  [&](auto& l, auto& r) { return (*(l->value) < *(r->value)); });
     }
 
     virtual ~NumberSet(void) = default;
@@ -44,16 +67,27 @@ public:
 
     void PrintSums(std::ostream& os) {
         for(auto& result : results_) {
-            os << *(result.value) << " = " << result.expr << "\n";
+            os << *(result->value) << " = " << result->expr << "\n";
         }
     }
 
     void PrintMatchedSums(const NumberSet& other, std::ostream& os) {
         for(auto& result : results_) {
-            for(auto& otherResult : other.results_) {
-                if (*(result.value) == *(otherResult.value)) {
-                    os << result.expr << " == " << otherResult.expr << "\n";
+            if (other.resultMap_.empty()) {
+                for(auto& otherResult : other.results_) {
+                    if (*(result->value) == *(otherResult->value)) {
+                        os << result->expr << " == " << otherResult->expr << "\n";
+                    }
                 }
+            } else {
+                auto iResults = other.resultMap_.find(*(result->value));
+                if (iResults != other.resultMap_.end()) {
+                    os << result->expr;
+                    for(auto& otherResult : iResults->second) {
+                        os << " == " << otherResult->expr;
+                    }
+                }
+                os << "\n";
             }
         }
     }
@@ -69,7 +103,7 @@ private:
     void addExpressions(const ExpressionSet& exprSet, const BigNumber& number, const BigNumber& maxNumber) {
         if (number > maxNumber) {
             for(auto& expr : exprSet) {
-                results_.push_back(Result{expr, calculate(expr)});
+                registerExpressions(expr);
             }
         } else {
             ExpressionSet exprSetPlus;
@@ -85,6 +119,18 @@ private:
             }
         }
         return;
+    }
+
+    void registerExpressions(const Expression& expr) {
+        auto value = calculate(expr);
+        if (value) {
+            std::shared_ptr<Result> pResult = std::make_shared<Result>(expr, value);
+            results_.push_back(pResult);
+
+            if ((filter_ == FILTER::BY_VALUE) && value) {
+                resultMap_[*value].push_back(pResult);
+            }
+        }
     }
 
     template <typename Iterator>
@@ -112,20 +158,31 @@ private:
     }
 
     ResultSet results_;
+    ResultMap resultMap_;
+    FILTER filter_;
 };
 
 int main(int argc, char* argv[]) {
-    // 問4-1
-    NumberSet s(1,4);
-    s.PrintSums(std::cout);
+    if (argc > 1) {
+        std::string mode(argv[1]);
+        // 引数mapをつけると、連想配列を使って解く
+        // 引数slowをつけると総当たりで解く、実はmap以外の文字列なら何でもよい
+        NumberSet::FILTER filter = (mode == "map") ?
+            NumberSet::FILTER::BY_VALUE : NumberSet::FILTER::BY_EXPRESSION;
+        NumberSet l(1,15, filter);
+        NumberSet r(2,16, filter);
+        l.PrintMatchedSums(r, std::cout);
+    } else {
+        // 問4-1
+        NumberSet s(1,4, NumberSet::FILTER::BY_EXPRESSION);
+        s.PrintSums(std::cout);
 
-    // 問4-2
-    NumberSet l(1,5);
-    NumberSet r(2,6);
-    l.PrintMatchedSums(r, std::cout);
+        // 問4-2
+        NumberSet l(1,5, NumberSet::FILTER::BY_EXPRESSION);
+        NumberSet r(2,6, NumberSet::FILTER::BY_EXPRESSION);
+        l.PrintMatchedSums(r, std::cout);
+    }
 
-//  NumberSet u(2002,2017);
-//  u.PrintSums(std::cout);
     return 0;
 }
 
