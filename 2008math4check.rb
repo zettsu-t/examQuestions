@@ -29,6 +29,7 @@ COMMAND_SET = [["ruby 2008math4.rb"],
                ["./2008math4c"],
                ["./2008math4a"],
                ["./2008math4hs"],
+               ["./2008math4rs"],
                ['java -cp "C:\\bin\\clojure\\package;C:\\bin\\clojure\\clojure-1.8.0.jar" clojure.main 2008math4.clj'],
                ["/cygdrive/c/bin/Gauche/bin/gosh.exe -I . 2008math4.scm"],
                ["ocaml 2008math4.ml"]]
