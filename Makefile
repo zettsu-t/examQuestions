@@ -103,6 +103,6 @@ $(OBJ_2008_ASM_S) : $(SOURCE_2008_ASM_S)
 	$(AS) $(ASFLAGS) -o $@ $<
 
 clean:
-	$(RM) $(TARGETS) $(OBJS) $(LOGS) ./*.o ./*.hi
+	$(RM) $(TARGETS) $(OBJS) $(LOGS) ./*.o ./*.hi ./*.class
 
 rebuild: clean all

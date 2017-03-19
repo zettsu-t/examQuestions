@@ -32,6 +32,7 @@ COMMAND_SET = [["ruby 2008math4.rb"],
                ["javac 2008math4.java", "java -cp . Exam2008Q4"],
                ["python3 2008math4.py"],
                ["groovy 2008math4.groovy"],
+               ["scala 2008math4.scala fast"],
                ["scala 2008math4.scala"],
                ["bash 2008math4.sh"],
                ["make -f 2008math4.mk"],
@@ -59,7 +60,7 @@ class Solution
     str = arg.chomp
     return [] if str.empty?
 
-    [:parseSchemeLog, :parseClojureLog, :parseHaskellLog, :parseRubyLog, :parseScalaLog].each do |f|
+    [:parseScalaLog, :parseSchemeLog, :parseClojureLog, :parseHaskellLog, :parseRubyLog].each do |f|
       strSet = send(f, str)
       return strSet if strSet
     end
@@ -67,8 +68,26 @@ class Solution
     str.lines.reject{ |s| s.include?("make") || !s.match(/^\s*$/).nil? }
   end
 
+  def parseScalaLog(str)
+    return nil unless str.include?("msec")
+
+    strSet = str.lines.map do |line|
+      if line.include?("msec")
+        nil
+      elsif line.include?("List")
+        md = line.match(/List\(([^(]+)\)/)
+        md.nil? ? "" : md[1]
+      else
+        md = line.match(/(\d+),([^(]+)\)/)
+        md.nil? ? "" : (md[1] + "=" + md[2])
+      end
+    end.compact
+
+    strSet
+  end
+
   def parseSchemeLog(str)
-    return if str.length < 3 || str[0..1] != "(("
+    return nil if str.length < 3 || str[0..1] != "(("
 
     str.lines.map do |originalLine|
       arg = originalLine.chomp
@@ -81,7 +100,7 @@ class Solution
   end
 
   def parseClojureLog(str)
-    return if str.length < 3 || str[0] != "[" || str[-1] != ")"
+    return nil if str.length < 3 || str[0] != "[" || str[-1] != ")"
 
     str.lines.map do |line|
       if (line.count("[") > 1)
@@ -94,7 +113,7 @@ class Solution
   end
 
   def parseHaskellLog(str)
-    return if str.length < 5 || str[0..1] != "[(" || str[-2..-1] != ")]"
+    return nil if str.length < 5 || str[0..1] != "[(" || str[-2..-1] != ")]"
     lines = str.split(/\n/).map(&:chomp)
     return if lines.size != 2
 
@@ -103,24 +122,8 @@ class Solution
   end
 
   def parseRubyLog(str)
-    return if str.length < 3 || str[0] != "[" || str[-1] != "]"
+    return nil if str.length < 3 || str[0] != "[" || str[-1] != "]"
     str.split(/,|\n/).map(&:chomp)
-  end
-
-  def parseScalaLog(str)
-    return if str.length < 3 || str[0] != "(" || str[-1] != ")"
-
-    strSet = str.lines.map do |line|
-      if line.include?("List")
-        md = line.match(/List\(([^(]+)\)/)
-        md.nil? ? "" : md[1]
-      else
-        md = line.match(/(\d+),([^(]+)\)/)
-        md.nil? ? "" : (md[1] + "=" + md[2])
-      end
-    end
-
-    strSet
   end
 
   def canonicalize(strSet)
