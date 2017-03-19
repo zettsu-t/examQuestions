@@ -20,10 +20,20 @@ class ExprSet
   def printMatchedSums(other)
     puts @exprSet.product(other.exprSet).map { |x| x.join(" == ") }.select { |x| eval x }
   end
+
+  # より詳しく報告する
+  def printMatchedSumsAndValue(other)
+    @exprSet.product(other.exprSet).map do |l,r|
+      [l, [l, r].join(" == ")]
+    end.select { |l,expr| eval expr }.each do |l,expr|
+      puts (eval l).to_s + " : " + expr
+    end
+  end
 end
 
-if (ARGV.size > 0)
-  ExprSet.new(1,10).printMatchedSums(ExprSet.new(2,11))
+if (ARGV.size >= 4)
+  v = ARGV.map(&:to_i)
+  ExprSet.new(v[0],v[1]).printMatchedSumsAndValue(ExprSet.new(v[2],v[3]))
 else
   # 問4-1
   ExprSet.new(1,4).printSums
@@ -31,4 +41,4 @@ else
   ExprSet.new(1,5).printMatchedSums(ExprSet.new(2,6))
 end
 
-0
+exit(0)

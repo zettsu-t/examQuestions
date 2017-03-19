@@ -24,21 +24,24 @@ class ExprSetFast
     @exprMap.keys.sort.each { |key| @exprMap[key].each { |expr| puts "#{key} = #{expr}" }}
   end
 
-  def printMatchedSums(other)
+  def printMatchedSums(printValue, other)
     other.exprMap.keys.sort.each do |key|
       next unless @exprMap.key?(key)
-      puts (@exprMap[key] + other.exprMap[key]).join(" == ")
+      str = printValue ? (key.to_s + " : ") : ""
+      str += (@exprMap[key] + other.exprMap[key]).join(" == ")
+      puts str
     end
   end
 end
 
-if (ARGV.size > 0)
-  ExprSetFast.new(1,10).printMatchedSums(ExprSetFast.new(2,11))
+if (ARGV.size >= 4)
+  v = ARGV.map(&:to_i)
+  ExprSetFast.new(v[0],v[1]).printMatchedSums(true, ExprSetFast.new(v[2],v[3]))
 else
   # 問4-1
   ExprSetFast.new(1,4).printSums
   # 問4-2
-  ExprSetFast.new(1,5).printMatchedSums(ExprSetFast.new(2,6))
+  ExprSetFast.new(1,5).printMatchedSums(false, ExprSetFast.new(2,6))
 end
 
-0
+exit(0)

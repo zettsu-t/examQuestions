@@ -16,6 +16,15 @@ SOLUTION_SET = [["9=1*2+3+4", "10=1+2+3+4", "10=1*2*3+4", "11=1+2*3+4",
 # Gaucheは C:\bin\Gauche\bin に、
 # Clojure(clojure-1.8.0.jar) は C:\bin\clojure\ に、
 # clojure.math.combinatorics は C:\bin\clojure\package にあるという前提
+
+LARGE_TEST_CASE = "1 10 2 11"
+LARGE_COMMAND_SET = ["./2008math4c nomap",
+                     "./2008math4c map",
+                     "python3 2008math4.py fast",
+                     "python3 2008math4.py slow",
+                     "ruby 2008math4.rb",
+                     "ruby 2008math4b.rb"]
+
 COMMAND_SET = [["ruby 2008math4.rb"],
                ["ruby 2008math4a.rb"],
                ["ruby 2008math4b.rb"],
@@ -123,6 +132,74 @@ class Solution
   end
 end
 
+class LargeSet
+  def initialize
+    passed = 0
+    failed = 0
+    error = 0
+    baseResult = []
+    baseResultStr = "."
+
+    LARGE_COMMAND_SET.each do |command|
+      puts "--------------------\n"
+      commandLine = command + " " + LARGE_TEST_CASE
+      print "#{commandLine} : "
+
+      status = 0
+      originalLines = 0
+      result = []
+      begin
+        stdoutstr, stderrstr, status = Open3.capture3(commandLine)
+        originalLines, result = formatResult(stdoutstr) if status == 0
+      rescue
+      ensure
+        if status != 0 || result.empty?
+          puts "Error\n"
+          error += 1
+        else
+          if baseResult.empty?
+            baseResult = result
+            baseResultStr = result.join("\n")
+            puts "\nconvert input #{originalLines} lines to #{result.size} lines in the first case\n"
+            passed += 1
+          else
+            puts "\nconvert input #{originalLines} lines to #{result.size} lines\n"
+            sameResult = (baseResultStr == result.join("\n"))
+            message = sameResult ? "same as expected" : "different from expected"
+            puts message
+            passed += 1 if sameResult
+            failed += 1 unless sameResult
+          end
+        end
+      end
+    end
+
+    puts "====================\n"
+    puts "passed = #{passed}, failed = #{failed}, error = #{error}\n\n"
+  end
+
+  def formatResult(str)
+    allExprMap = {}
+    originalLines = str.lines.size
+
+    str.lines.each do |line|
+      md = line.chomp.match(/^(\d+)\s*:(.*)$/)
+      next unless md
+
+      # value : exprA == exprB == exprC と、 value : exprD == exprE を、
+      # value : exprA == exprB == exprC == exprD == exprE にまとめる
+      subExprSet = md[2].split("==").map(&:strip)
+      key = md[1] + " : "
+      allExprMap[key] = [] unless allExprMap.key?(key)
+      allExprMap[key].concat(subExprSet)
+    end
+
+    allExprSet = []
+    allExprMap.each { |key, value| allExprSet << (key + value.sort.uniq.join(" == ")) }
+    return originalLines, allExprSet.sort_by(&:to_i)
+  end
+end
+
 class CommandSet
   def initialize
     passed = 0
@@ -133,12 +210,12 @@ class CommandSet
       puts "--------------------\n"
 
       commands.each_with_index do |command, i|
-        startTime = Time.now
         print "#{command} : "
         stdoutstr = ""
         stderrstr = ""
         status = 1
 
+        startTime = Time.now
         begin
           stdoutstr, stderrstr, status = Open3.capture3(command)
         rescue
@@ -160,9 +237,10 @@ class CommandSet
     end
 
     puts "====================\n"
-    puts "passed = #{passed}, failed = #{failed}, error = #{error}\n"
+    puts "passed = #{passed}, failed = #{failed}, error = #{error}\n\n"
   end
 end
 
+LargeSet.new
 CommandSet.new
 0

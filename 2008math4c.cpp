@@ -54,8 +54,14 @@ public:
         BY_VALUE,
     };
 
-    NumberSet(const BigNumber& minNumber, const BigNumber& maxNumber, FILTER filter) :
-        filter_(filter) {
+    enum class PRINT_VALUE {
+        NO_PRINT,
+        PRINT,
+    };
+
+    NumberSet(const BigNumber& minNumber, const BigNumber& maxNumber,
+              FILTER filter, PRINT_VALUE printValue) :
+        filter_(filter), printValue_(printValue) {
         addExpressions(minNumber, maxNumber);
         std::sort(results_.begin(), results_.end(),
                   [&](auto& l, auto& r) { return (*(l->value) < *(r->value)); });
@@ -76,18 +82,20 @@ public:
             if (other.resultMap_.empty()) {
                 for(auto& otherResult : other.results_) {
                     if (*(result->value) == *(otherResult->value)) {
+                        printValue(result->value, os);
                         os << result->expr << " == " << otherResult->expr << "\n";
                     }
                 }
             } else {
                 auto iResults = other.resultMap_.find(*(result->value));
                 if (iResults != other.resultMap_.end()) {
+                    printValue(result->value, os);
                     os << result->expr;
                     for(auto& otherResult : iResults->second) {
                         os << " == " << otherResult->expr;
                     }
+                    os << "\n";
                 }
-                os << "\n";
             }
         }
     }
@@ -157,29 +165,45 @@ private:
         return result;
     }
 
+    void printValue(const boost::optional<BigNumber>& value, std::ostream& os) {
+        if (printValue_ == NumberSet::PRINT_VALUE::PRINT) {
+            os << *value << " : ";
+        }
+        return;
+    }
+
     ResultSet results_;
     ResultMap resultMap_;
     FILTER filter_;
+    PRINT_VALUE printValue_;
 };
 
 int main(int argc, char* argv[]) {
-    if (argc > 1) {
+    NumberSet::PRINT_VALUE printValue = (argc < 2) ?
+        NumberSet::PRINT_VALUE::NO_PRINT : NumberSet::PRINT_VALUE::PRINT;
+
+    if (argc < 6) {
+        // 問4-1
+        NumberSet s(1,4, NumberSet::FILTER::BY_EXPRESSION, printValue);
+        s.PrintSums(std::cout);
+
+        // 問4-2
+        NumberSet l(1,5, NumberSet::FILTER::BY_EXPRESSION, printValue);
+        NumberSet r(2,6, NumberSet::FILTER::BY_EXPRESSION, printValue);
+        l.PrintMatchedSums(r, std::cout);
+    } else {
         std::string mode(argv[1]);
         // 引数mapをつけると、連想配列を使って解く
         // 引数slowをつけると総当たりで解く、実はmap以外の文字列なら何でもよい
         NumberSet::FILTER filter = (mode == "map") ?
             NumberSet::FILTER::BY_VALUE : NumberSet::FILTER::BY_EXPRESSION;
-        NumberSet l(1,15, filter);
-        NumberSet r(2,16, filter);
-        l.PrintMatchedSums(r, std::cout);
-    } else {
-        // 問4-1
-        NumberSet s(1,4, NumberSet::FILTER::BY_EXPRESSION);
-        s.PrintSums(std::cout);
 
-        // 問4-2
-        NumberSet l(1,5, NumberSet::FILTER::BY_EXPRESSION);
-        NumberSet r(2,6, NumberSet::FILTER::BY_EXPRESSION);
+        unsigned int minLeft  = boost::lexical_cast<decltype(minLeft)>(argv[2]);
+        unsigned int maxLeft  = boost::lexical_cast<decltype(maxLeft)>(argv[3]);
+        unsigned int minRight = boost::lexical_cast<decltype(minRight)>(argv[4]);
+        unsigned int maxRight = boost::lexical_cast<decltype(maxRight)>(argv[5]);
+        NumberSet l(minLeft,  maxLeft,  filter, printValue);
+        NumberSet r(minRight, maxRight, filter, printValue);
         l.PrintMatchedSums(r, std::cout);
     }
 
