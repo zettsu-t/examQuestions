@@ -20,10 +20,15 @@ SOLUTION_SET = [["9=1*2+3+4", "10=1+2+3+4", "10=1*2*3+4", "11=1+2*3+4",
 LARGE_TEST_CASE = "1 10 2 11"
 LARGE_COMMAND_SET = ["./2008math4c nomap",
                      "./2008math4c map",
+                     "./2008math4rs",
                      "python3 2008math4.py fast",
                      "python3 2008math4.py slow",
                      "ruby 2008math4.rb",
                      "ruby 2008math4b.rb"]
+
+VERY_LARGE_TEST_CASE = "1 18 2 19"
+VERY_LARGE_COMMAND_SET = ["./2008math4c map",
+                          "./2008math4rs"]
 
 COMMAND_SET = [["ruby 2008math4.rb"],
                ["ruby 2008math4a.rb"],
@@ -136,16 +141,16 @@ class Solution
 end
 
 class LargeSet
-  def initialize
+  def initialize(testCase, commandSet)
     passed = 0
     failed = 0
     error = 0
     baseResult = []
     baseResultStr = "."
 
-    LARGE_COMMAND_SET.each do |command|
+    commandSet.each do |command|
       puts "--------------------\n"
-      commandLine = command + " " + LARGE_TEST_CASE
+      commandLine = command + " " + testCase
       print "#{commandLine} : "
 
       status = 0
@@ -244,6 +249,7 @@ class CommandSet
   end
 end
 
-LargeSet.new
+LargeSet.new(LARGE_TEST_CASE, LARGE_COMMAND_SET)
 CommandSet.new
-0
+LargeSet.new(VERY_LARGE_TEST_CASE, VERY_LARGE_COMMAND_SET)
+exit(0)

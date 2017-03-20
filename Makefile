@@ -48,15 +48,15 @@ HASKELLPROFILE=-with-rtsopts="-hT -H512m" -rtsopts
 HASKELLRTS=+RTS -sstderr -RTS
 LOG_2008_HS_OPT=$(HASKELLRTS) nomap
 HASKELLFLAGS=-O
-RUSTFLAGS=
+RUSTFLAGS=-O
 LDFLAGS=
 
 AS=as
 CC=gcc
 CXX=g++
 ASFLAGS=
-CFLAGS=-std=gnu99 -g -O -Wall
-CPPFLAGS=-std=c++14 -g -O -Wall
+CFLAGS=-std=gnu99 -O2 -Wall
+CPPFLAGS=-std=c++14 -O2 -Wall
 CASMFLAGS=-mavx2 -masm=intel
 LIBPATH=
 LIBS=

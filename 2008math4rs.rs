@@ -1,13 +1,17 @@
 use std::string::String;
+use std::string::ToString;
 use std::vec::Vec;
 use std::collections::LinkedList;
+use std::env;
+
+type ExprValue = usize;
 
 struct Result {
-    value : usize,
+    value : ExprValue,
     expr  : String
 }
 
-fn make_result(value : usize, nums: Vec<usize>, ops: Vec<usize>) -> Result {
+fn make_result(value : ExprValue, nums: Vec<ExprValue>, ops: Vec<ExprValue>) -> Result {
     let mut s : String = nums[0].to_string();
     let mut restnums = nums.clone();
     restnums.remove(0);
@@ -25,13 +29,13 @@ fn make_result(value : usize, nums: Vec<usize>, ops: Vec<usize>) -> Result {
     result
 }
 
-fn op_lists(x: usize) -> LinkedList<Vec<usize>> {
-    let mut result : LinkedList<Vec<usize>> = LinkedList::new();
+fn op_lists(x: ExprValue) -> LinkedList<Vec<ExprValue>> {
+    let mut result : LinkedList<Vec<ExprValue>> = LinkedList::new();
     if x == 0 {
         result.push_back(vec![]);
     } else {
         for sub in op_lists(x - 1) {
-            let elements : Vec<usize> = vec![0,1];
+            let elements : Vec<ExprValue> = vec![0,1];
             for element in elements {
                 let mut s = sub.clone();
                 s.push(element);
@@ -42,8 +46,8 @@ fn op_lists(x: usize) -> LinkedList<Vec<usize>> {
     result
 }
 
-fn apply_op_lists(nums: Vec<usize>, ops: Vec<usize>) -> usize {
-    let mut result : usize = nums[0];
+fn apply_op_lists(nums: Vec<ExprValue>, ops: Vec<ExprValue>) -> ExprValue {
+    let mut result : ExprValue = nums[0];
     if ops.len() > 0 {
         let mut newnums = nums.clone();
         let mut newops = ops.clone();
@@ -60,10 +64,10 @@ fn apply_op_lists(nums: Vec<usize>, ops: Vec<usize>) -> usize {
     result
 }
 
-fn expressions(min_num: usize, max_num: usize) -> Vec<Result> {
+fn expressions(min_num: ExprValue, max_num: ExprValue) -> Vec<Result> {
     let mut results : Vec<Result> = Vec::new();
     for ops in op_lists(max_num - min_num) {
-       let nums : Vec<usize> = ((min_num)..(max_num+1)).collect();
+       let nums : Vec<ExprValue> = ((min_num)..(max_num+1)).collect();
        let vops = ops.clone();
        let vnums = nums.clone();
        let result = make_result(apply_op_lists(nums, ops), vnums, vops);
@@ -74,23 +78,49 @@ fn expressions(min_num: usize, max_num: usize) -> Vec<Result> {
     results
 }
 
-fn q1(min_num: usize, max_num: usize) {
+fn q1(min_num: ExprValue, max_num: ExprValue) {
     for result in expressions(min_num, max_num) {
         println!("{} = {}", result.value, result.expr);
     }
 }
 
-fn q2(min_left: usize, max_left: usize, min_right: usize, max_right: usize) {
+fn q2(print_value: bool, min_left: ExprValue, max_left: ExprValue, min_right: ExprValue, max_right: ExprValue) {
+    let right_exprs = expressions(min_right, max_right);
+    let size = right_exprs.len();
+    let mut index = 0;
+    let mut count = 0;
+
     for left in expressions(min_left, max_left) {
-        for right in expressions(min_right, max_right) {
-            if left.value == right.value {
-                println!("{} == {}", left.expr, right.expr);
+        index -= count;
+        if index >= size {
+            break
+        }
+
+        count = 0;
+        while index < size && left.value >= right_exprs[index].value {
+            if left.value == right_exprs[index].value {
+                if print_value {
+                    println!("{} : {} == {}", left.value, left.expr, right_exprs[index].expr);
+                } else {
+                    println!("{} == {}", left.expr, right_exprs[index].expr);
+                }
+                count += 1;
             }
+            index += 1;
         }
     }
 }
 
 fn main() {
-    q1(1,4);
-    q2(1,5,2,6);
+    if env::args().len() < 5 {
+        q1(1,4);
+        q2(false, 1,5,2,6);
+    } else {
+        let args : Vec<String> = env::args().collect();
+        q2(true,
+           args[1].parse::<ExprValue>().unwrap(),
+           args[2].parse::<ExprValue>().unwrap(),
+           args[3].parse::<ExprValue>().unwrap(),
+           args[4].parse::<ExprValue>().unwrap());
+    }
 }

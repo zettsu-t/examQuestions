@@ -23,17 +23,23 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/spirit/include/phoenix_function.hpp>
 
+#ifdef USE_BIG_INTETER
 using BigNumber = boost::multiprecision::uint512_t;  // 計算結果
+#else
+using BigNumber = size_t; // Rust互換
+#endif
 
 // unordered_mapに格納できるようにする
 namespace std {
-  template <> struct hash<BigNumber> {
-    std::size_t operator()(const BigNumber& key) const {
-        using KeyType = size_t;
-        static_assert(std::is_unsigned<KeyType>::value, "Expect unsigned key");
-        return static_cast<KeyType>(key);
-    }
-  };
+#ifdef USE_BIG_INTETER
+    template <> struct hash<BigNumber> {
+        std::size_t operator()(const BigNumber& key) const {
+            using KeyType = size_t;
+            static_assert(std::is_unsigned<KeyType>::value, "Expect unsigned key");
+            return static_cast<KeyType>(key);
+        }
+    };
+#endif
 }
 
 class NumberSet {
