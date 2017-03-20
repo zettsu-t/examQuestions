@@ -19,7 +19,8 @@ TEST_SCRIPT=2008math4check.rb
 OBJ_2008_CPP=2008math4c.o
 OBJ_2008_ASM_C=2008math4a.o
 OBJ_2008_ASM_S=2008math4asm.o
-OBJS=$(OBJ_2008_CPP) $(OBJ_2008_ASM_C) $(OBJ_2008_ASM_S)
+OBJ_2008_HASKELL=2008math4.hi
+OBJS=$(OBJ_2008_CPP) $(OBJ_2008_ASM_C) $(OBJ_2008_ASM_S) $(OBJ_2008_HASKELL)
 
 SOURCE_2006=2006math5.hs
 SOURCE_2008_CPP=2008math4c.cpp
@@ -35,13 +36,17 @@ OPT_2006_3=3
 LOG_2006_1=log2006_1.txt
 LOG_2006_2=log2006_2.txt
 LOG_2006_3=log2006_3.txt
-LOGS_2006=$(LOG_2006_1) $(LOG_2006_2) $(LOG_2006_3)
+LOG_2008_HS=log2008_hs.txt
+LOGS_2006=$(LOG_2006_1) $(LOG_2006_2) $(LOG_2006_3) $(LOG_2008_HS)
 LOGS=$(LOGS_2006)
 
 DIFF=diff
 HASKELL=ghc
 RUST=rustc
 RUBY=ruby
+HASKELLPROFILE=-with-rtsopts="-hT -H512m" -rtsopts
+HASKELLRTS=+RTS -sstderr -RTS
+LOG_2008_HS_OPT=$(HASKELLRTS) nomap
 HASKELLFLAGS=-O
 RUSTFLAGS=
 LDFLAGS=
@@ -56,7 +61,7 @@ CASMFLAGS=-mavx2 -masm=intel
 LIBPATH=
 LIBS=
 
-.PHONY: all clean rebuild
+.PHONY: all profile clean rebuild force
 
 all: $(TARGETS)
 	./$(TARGET_2008_CPP)
@@ -102,7 +107,22 @@ $(OBJ_2008_ASM_C) : $(SOURCE_2008_ASM_C)
 $(OBJ_2008_ASM_S) : $(SOURCE_2008_ASM_S)
 	$(AS) $(ASFLAGS) -o $@ $<
 
+measure=echo './$(TARGET_2008_HASKELL) nomap' $1 $2 $3 $4 >> $(LOG_2008_HS) ; time ./$(TARGET_2008_HASKELL) $(LOG_2008_HS_OPT) $1 $2 $3 $4 > /dev/null 2>> $(LOG_2008_HS)
+
+profile: force
+	$(RM) $(TARGET_2008_HASKELL) $(OBJ_2008_HASKELL) $(LOG_2008_HS)
+	$(HASKELL) $(HASKELLPROFILE) $(HASKELLFLAGS) -o $(TARGET_2008_HASKELL) $(SOURCE_2008_HASKELL) $(LDFLAGS)
+	./2008math4hs $(LOG_2008_HS_OPT) 1 9 2 10 > /dev/null 2>> /dev/null
+	$(call measure, 1  9 2 10)
+	$(call measure, 1 10 2 11)
+	$(call measure, 1 11 2 12)
+	$(call measure, 1 12 2 13)
+	$(call measure, 1 13 2 14)
+	$(call measure, 1 14 2 15)
+	$(call measure, 1 15 2 16)
+	$(call measure, 1 16 2 17)
+
 clean:
-	$(RM) $(TARGETS) $(OBJS) $(LOGS) ./*.o ./*.hi ./*.class
+	$(RM) $(TARGETS) $(OBJS) $(LOGS) ./*.o ./*.hi ./*.hp ./*.class
 
 rebuild: clean all
