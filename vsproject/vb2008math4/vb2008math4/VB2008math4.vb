@@ -5,9 +5,9 @@
         If (minNum = maxNum) Then
             ls.Add(num)
         Else
-            For Each subLists In Expressions(minNum + 1, maxNum)
-                ls.Add(num + "+" + subLists)
-                ls.Add(num + "*" + subLists)
+            For Each subExpr In Expressions(minNum + 1, maxNum)
+                ls.Add(num + "+" + subExpr)
+                ls.Add(num + "*" + subExpr)
             Next
         End If
 
