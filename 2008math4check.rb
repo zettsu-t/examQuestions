@@ -4,6 +4,8 @@
 # 麻布中学校 2008年 入試問題 算数 問4 を解いてテストする
 
 require 'open3'
+require 'open-uri'
+require 'nokogiri'
 
 # 問4の解
 SOLUTION_SET = [["9=1*2+3+4", "10=1+2+3+4", "10=1*2*3+4", "11=1+2*3+4",
@@ -53,6 +55,10 @@ COMMAND_SET = [["ruby 2008math4.rb"],
                ['java -cp "C:\\bin\\clojure\\package;C:\\bin\\clojure\\clojure-1.8.0.jar" clojure.main 2008math4.clj'],
                ["/cygdrive/c/bin/Gauche/bin/gosh.exe -I . 2008math4.scm"],
                ["ocaml 2008math4.ml"]]
+
+# XAMPPをインストールし、HTTPサーバを8020番ポートで立ち上げ、
+# htdocsにコンテンツを置いてあるという前提
+URL_SET = ["http://localhost:8020/2008math4.php"];
 
 class Solution
   def initialize(solution)
@@ -254,6 +260,39 @@ class CommandSet
   end
 end
 
+class CommandHttp
+  def initialize
+    passed = 0
+    failed = 0
+    error = 0
+
+    puts "--------------------\n"
+    URL_SET.each do |url|
+      print "#{url}\n"
+      str = ""
+      begin
+        doc = Nokogiri::HTML(open(url))
+        str = doc.xpath('//body/p').map(&:inner_text).join("\n")
+      rescue
+      ensure
+        if (str == "")
+          print "Error in connection to #{url}\n"
+          error += 1
+        else
+          result, message = Solution.new(str).compare
+          puts "result : " + message
+          passed += 1 if result
+          failed += 1 unless result
+        end
+      end
+    end
+
+    puts "====================\n"
+    puts "passed = #{passed}, failed = #{failed}, error = #{error}\n\n"
+  end
+end
+
+CommandHttp.new
 LargeSet.new(LARGE_TEST_CASE, LARGE_COMMAND_SET)
 CommandSet.new
 LargeSet.new(VERY_LARGE_TEST_CASE, VERY_LARGE_COMMAND_SET)

@@ -7,7 +7,7 @@ require 'open-uri'
 LANGUAGE_SET = ['Ruby', 'JavaScript', 'Java', 'C#', 'Visual Basic .NET',
                 'Perl', 'Python', 'Groovy', 'Scala', 'Bash',
                 'C++', 'C', 'Assembly language',
-                'Haskell', 'Clojure', 'Scheme', 'OCaml', 'F#', 'Rust',
+                'Haskell', 'PHP', 'Clojure', 'Scheme', 'OCaml', 'F#', 'Rust',
                 'Makefile']
 
 # 起動時の引数がwebなら、TIOBEのサイトからHTMLを収集して解析する
