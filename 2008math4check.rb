@@ -13,7 +13,10 @@ SOLUTION_SET = [["9=1*2+3+4", "10=1+2+3+4", "10=1*2*3+4", "11=1+2*3+4",
                  "1+2+3*4+5==2+3+4+5+6", "1*2+3+4*5==2+3*4+5+6"],
                 ["9=1*2+3+4", "10=1*2*3+4", "10=1+2+3+4", "11=1+2*3+4",
                  "14=1*2+3*4", "15=1+2+3*4", "24=1*2*3*4", "25=1+2*3*4",
-                 "1+2+3*4+5==2+3+4+5+6", "1*2+3+4*5==2+3*4+5+6"]]
+                 "1+2+3*4+5==2+3+4+5+6", "1*2+3+4*5==2+3*4+5+6"],
+                ["9=1*2+3+4", "10=1*2*3+4", "10=1+2+3+4", "11=1+2*3+4",
+                 "14=1*2+3*4", "15=1+2+3*4", "24=1*2*3*4", "25=1+2*3*4",
+                 "1*2+3+4*5==2+3*4+5+6", "1+2+3*4+5==2+3+4+5+6"]]
 
 # Gaucheは C:\bin\Gauche\bin に、
 # Clojure(clojure-1.8.0.jar) は C:\bin\clojure\ に、
@@ -33,7 +36,8 @@ VERY_LARGE_TEST_CASE = "1 18 2 19"
 VERY_LARGE_COMMAND_SET = ["./2008math4c map",
                           "./2008math4rs"]
 
-COMMAND_SET = [["ruby 2008math4.rb"],
+COMMAND_SET = [["./math_kuin | iconv -f UTF-16LE -t UTF-8"],
+               ["ruby 2008math4.rb"],
                ["ruby 2008math4a.rb"],
                ["ruby 2008math4b.rb"],
                ["vsproject/cs2008math4/cs2008math4/bin/Release/cs2008math4"],
@@ -81,7 +85,10 @@ class Solution
       return strSet if strSet
     end
 
-    str.lines.reject{ |s| s.include?("make") || !s.match(/^\s*$/).nil? }
+    # Kuinは9 = の代わりに09 =という記述を認める
+    str.lines.reject{ |s| s.include?("make") || !s.match(/^\s*$/).nil? }.map do |line|
+      line.chomp.sub(/^0+/,"").strip
+    end.reject(&:empty?)
   end
 
   def parseScalaLog(str)
@@ -292,8 +299,8 @@ class CommandHttp
   end
 end
 
+CommandSet.new
 CommandHttp.new
 LargeSet.new(LARGE_TEST_CASE, LARGE_COMMAND_SET)
-CommandSet.new
 LargeSet.new(VERY_LARGE_TEST_CASE, VERY_LARGE_COMMAND_SET)
 exit(0)
