@@ -68,7 +68,7 @@ func q2() : bool
             if (result_l = result_r)
                 do cui@print(@expr_to_str(1,5,ops_seq_l) ~ " == " ~ @expr_to_str(2,6,ops_seq_r) ~ "\n")
             end if
-    end foreach
+        end foreach
     end foreach
     ret true
 end func
