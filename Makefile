@@ -163,6 +163,6 @@ profile: force
 	$(call measure, 1 16 2 17)
 
 clean:
-	$(RM) $(TARGETS) $(OBJS) $(LOGS) ./*.o ./*.hi ./*.hp ./*.class
+	$(RM) $(TARGETS) $(OBJS) $(LOGS) ./*.o ./*.hi ./*.hp ./*.class ./*.beam
 
 rebuild: clean all

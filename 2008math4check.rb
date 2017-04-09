@@ -38,6 +38,7 @@ VERY_LARGE_COMMAND_SET = ["./2008math4c map",
 
 COMMAND_SET = [["./math_kuin | iconv -f UTF-16LE -t UTF-8"],
                ["elixir 2008math4.exs"],
+               ["erlc math_erl.erl", "erl -noshell -s math_erl main -s init stop"],
                ["ruby 2008math4.rb"],
                ["ruby 2008math4a.rb"],
                ["ruby 2008math4b.rb"],
