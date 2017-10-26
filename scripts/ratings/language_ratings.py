@@ -4,18 +4,18 @@
 '''
 This script
 - reads the TIOBE index from a local file or via Internet
-- writes a table for languages and,
+- writes a markdown table for languages and,
 - draws a parete chart by R
 
 usage (to parse a local HTML file)
-$ python3 language_ratings.py html-filename csv-filename png-filename
+$ python3 language_ratings.py html-filename table-filename png-filename
 - html-filename (input) : a local HTML file
-- csv-filename (output) : a CSV file that contains the TIOBE index rating
-  for selected languages
+- table-filename (output) : a markdown table file that contains the TIOBE
+  index rating for selected languages
 - png-filename (output) : a parete chart for the table
 
 usage (to read TIOBE official website)
-$ python3 language_ratings.py web csv-filename png-filename
+$ python3 language_ratings.py web table-filename png-filename
 
 Copyright (C) 2017 Zettsu Tatsuya
 '''
@@ -28,7 +28,7 @@ from bs4 import BeautifulSoup
 
 # Programming languages to extract TIOBE index ratings
 LANGUAGE_SET = ['Ruby', 'JavaScript', 'Java', 'C#', 'Visual Basic .NET',
-                'Perl', 'Python', 'Groovy', 'Scala', 'Bash',
+                'Perl', 'Python', 'Groovy', 'Scala', "R", 'Bash',
                 'C++', 'C', 'Assembly language', 'Haskell',
                 'Elixir', 'Erlang',
                 'PHP', 'Clojure', 'Scheme', 'OCaml', 'F#', 'Rust',
@@ -40,7 +40,7 @@ REMOTE_KEYWORD = 'web'
 REMOTE_URL = 'https://www.tiobe.com/tiobe-index/'
 
 # Usage
-USAGE_TEXT = 'usage : python3 language_ratings.py (html-filename|web) csv-filename png-filename'
+USAGE_TEXT = 'usage : python3 language_ratings.py (html-filename|web) table-filename png-filename'
 
 # Exit status for make
 EXIT_STATUS_SUCCESS = 0
@@ -55,16 +55,16 @@ class LanguageRatings():
 
     def __init__(self, command_line_arguments):
         self.html_path = command_line_arguments[1]
-        self.csv_filename = command_line_arguments[2]
+        self.table_filename = command_line_arguments[2]
         self.png_filename = command_line_arguments[3]
 
     def generate(self):
-        '''Generates a chart and csv file from a HTML document'''
+        '''Generates a chart and a markdown table file from a HTML document'''
 
         soup = self.fetch(self.html_path)
         partial_table, full_table = self.make_table(self.parse_file(soup))
-        self.make_chart(partial_table, self.csv_filename, self.png_filename)
-        with open(self.csv_filename, 'w') as file:
+        self.make_chart(partial_table, self.table_filename, self.png_filename)
+        with open(self.table_filename, 'w') as file:
             file.write(full_table)
 
         return EXIT_STATUS_SUCCESS
@@ -74,7 +74,10 @@ class LanguageRatings():
         '''Downloads or loads a HTML document'''
 
         if html_path == REMOTE_KEYWORD:
-            html_response = requests.get(REMOTE_URL)
+            # Set environment variables HTTP_PROXY and HTTPS_PROXY
+            # to use HTTP proxies.
+            # To avoid 'certificate verify failed', set verify=False
+            html_response = requests.get(REMOTE_URL, verify=False)
             html_text = html_response.text
         else:
             html_text = open(html_path)
@@ -147,15 +150,17 @@ class LanguageRatings():
         return partial_table, full_table
 
     @staticmethod
-    def make_chart(partial_table, csv_filename, png_filename):
+    def make_chart(partial_table, table_filename, png_filename):
         '''Makes a parete chat by R'''
 
-        # If it succeeded, overwrite the CSV file later.
-        with open(csv_filename, 'w') as file:
+        # Creates a CSV file of which name is table_filename
+        # If it succeeded, overwrite the file later.
+        # If it failed, the CSV file remains and can be checekd in debugging.
+        with open(table_filename, 'w') as file:
             file.write(partial_table)
 
         arguments = ['Rscript', 'language_ratings.R', '--args',
-                     csv_filename, png_filename]
+                     table_filename, png_filename]
         result = subprocess.run(arguments)
 
         if result.returncode:
