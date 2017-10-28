@@ -31,8 +31,8 @@ LANGUAGE_SET = ['Ruby', 'JavaScript', 'Java', 'C#', 'Visual Basic .NET',
                 'Perl', 'Python', 'Groovy', 'Scala', "R", 'Bash',
                 'C++', 'C', 'Assembly language', 'Haskell',
                 'Elixir', 'Erlang',
-                'PHP', 'Clojure', 'Scheme', 'OCaml', 'F#', 'Rust',
-                'Makefile', 'Kuin']
+                'PHP', 'Clojure', 'Scheme', 'OCaml', 'F#',
+                'Rust', 'Makefile', 'Kuin']
 
 # If a HTML filename is same as the special keyword,
 # this script downloads from the URL instead of reading a local file.
@@ -40,15 +40,27 @@ REMOTE_KEYWORD = 'web'
 REMOTE_URL = 'https://www.tiobe.com/tiobe-index/'
 
 # Usage
-USAGE_TEXT = 'usage : python3 language_ratings.py (html-filename|web) table-filename png-filename'
+USAGE_TEXT = 'usage : python3 language_ratings.py ' \
+             '(html-filename|web) table-filename png-filename'
+
+# Launched R script name without directories
+RSCRIPT_BASENAME = 'language_ratings.R'
+
+# Headers of tables
+CSV_HEADER = 'TIOBE index rank,Programming Language,Ratings[%]\n'
+MARKDOWN_HEADER = '|TIOBE index rank|Programming Language' \
+                  '|Ratings[%]|Cumulative Ratings[%]|\n' \
+                  '|:--|:------|:------|:------|\n'
 
 # Exit status for make
 EXIT_STATUS_SUCCESS = 0
 EXIT_STATUS_ERROR = 1
 
+
 class ErrorInR(Exception):
     '''Tells a runtime error which occurred in R'''
     pass
+
 
 class LanguageRatings():
     '''Makes a table for a subset of languages from the TIOBE index'''
@@ -63,7 +75,10 @@ class LanguageRatings():
 
         soup = self.fetch(self.html_path)
         partial_table, full_table = self.make_table(self.parse_file(soup))
-        self.make_chart(partial_table, self.table_filename, self.png_filename)
+
+        rscript_name = RSCRIPT_BASENAME
+        self.make_chart(partial_table, self.table_filename,
+                        self.png_filename, rscript_name)
         with open(self.table_filename, 'w') as file:
             file.write(full_table)
 
@@ -110,7 +125,7 @@ class LanguageRatings():
 
             try:
                 rank = int(td_tags[columns[0]].string)
-                language = td_tags[columns[1]].string
+                language = td_tags[columns[1]].string.strip()
                 ratings = float(td_tags[columns[2]].string.replace('%', ''))
                 name = self.get_unique_name(language)
                 languages.append([name, rank, language, ratings])
@@ -122,10 +137,8 @@ class LanguageRatings():
     def make_table(self, languages):
         '''Makes a markdown table'''
 
-        partial_table = 'TIOBE index rank,Programming Language,Ratings[%]\n'
-        full_table = '|TIOBE index rank|Programming Language'
-        full_table += '|Ratings[%]|Cumulative Ratings[%]|\n'
-        full_table += '|:--|:------|:------|:------|\n'
+        partial_table = CSV_HEADER
+        full_table = MARKDOWN_HEADER
         cumulative_ratings = 0.000
 
         # Keep an order for languages not ranked
@@ -139,8 +152,8 @@ class LanguageRatings():
                 cumulative_ratings += ratings
                 partial_table += '{0},{1},{2:f}\n'. \
                                  format(rank, language, ratings)
-                full_table += '|{0}|{1}|{2:5.3f}|{3:5.3f}|\n'. \
-                              format(rank, language, ratings, cumulative_ratings)
+                full_table += '|{0}|{1}|{2:5.3f}|{3:5.3f}|\n'.format(
+                    rank, language, ratings, cumulative_ratings)
                 language_map[name] = ''
 
         for _, language in language_map.items():
@@ -150,7 +163,7 @@ class LanguageRatings():
         return partial_table, full_table
 
     @staticmethod
-    def make_chart(partial_table, table_filename, png_filename):
+    def make_chart(partial_table, table_filename, png_filename, rscript_name):
         '''Makes a parete chat by R'''
 
         # Creates a CSV file of which name is table_filename
@@ -159,7 +172,7 @@ class LanguageRatings():
         with open(table_filename, 'w') as file:
             file.write(partial_table)
 
-        arguments = ['Rscript', 'language_ratings.R', '--args',
+        arguments = ['Rscript', rscript_name, '--args',
                      table_filename, png_filename]
         result = subprocess.run(arguments)
 

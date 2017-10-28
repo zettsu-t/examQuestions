@@ -5,7 +5,7 @@ require 'nokogiri'
 require 'open-uri'
 
 LANGUAGE_SET = ['Ruby', 'JavaScript', 'Java', 'C#', 'Visual Basic .NET',
-                'Perl', 'Python', 'Groovy', 'Scala', 'Bash',
+                'Perl', 'Python', 'Groovy', 'Scala', "R", 'Bash',
                 'C++', 'C', 'Assembly language', 'Haskell', 'Elixir', 'Erlang',
                 'PHP', 'Clojure', 'Scheme', 'OCaml', 'F#', 'Rust',
                 'Makefile', 'Kuin']
@@ -74,7 +74,7 @@ class LanguageSet
     usedLangs = LANGUAGE_SET.map { |name| Language.new(name) }
 
     rating = 0.0
-    str =  "|TIOBE index 順位|Programming Language|Ratings[%]|累積[%]|\n"
+    str =  "|TIOBE index rank|Programming Language|Ratings[%]|Cumulative Ratings[%]|\n"
     str += "|:--|:------|:------|:------|\n"
 
     @langs.each do |lang|
