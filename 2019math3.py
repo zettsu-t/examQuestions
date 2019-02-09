@@ -37,7 +37,6 @@ def main():
     view_upper_poly = [[0.0, 0.0], cut_point1[0:2], [1.0, 1.0], cut_point3[0:2]]
     view_lower_poly = [[0.0, 0.0], cut_point1[0:2], cube_point2[0:2], cut_point2[0:2]]
     view_edges = [[[0.0, 1.0], [0.0, 1.0]], [[cut_point1[0], cut_point2[0]], [cut_point1[1], cut_point2[1]]]]
-    view_lower_edges = [[0.0, 0.0], cut_point1[0:2], cube_point2[0:2], cut_point2[0:2]]
 
     cube_out_edges = [[[1.0, 1.0], [0.0, 0.0], [0.0, cube_out_z]],
                       [[0.0, cube_out_x], [0.0, 0.0], [1.0, 1.0]]]
